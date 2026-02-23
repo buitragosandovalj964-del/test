@@ -1,0 +1,83 @@
+import json
+from agregar_herramienta import cargar_herramientas
+from datetime import datetime
+
+ARCHIVO_BAJAS = "bajas.json"
+
+def cargar_bajas(archivo_bajas):
+    """Carga las bajas desde un archivo JSON."""
+    try:
+        with open(archivo_bajas, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print("Archivo de bajas no encontrado. Se creará uno nuevo.")
+        return []
+    except json.JSONDecodeError:
+        print("Error al leer el archivo de bajas. Se inicializará vacío.")
+        return []
+
+def guardar_bajas(archivo_bajas, bajas):
+    """Guarda las bajas en un archivo JSON."""
+    try:
+        with open(archivo_bajas, "w", encoding="utf-8") as f:
+            json.dump(bajas, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"Error al guardar las bajas: {e}")
+
+def listar_herramientas():
+    """Lista las herramientas disponibles."""
+    herramientas = cargar_herramientas()
+
+    print("REGISTRAR BAJAS HERRAMIENTAS")
+    for h in herramientas:
+        print("-" * 50)
+        print(f"ID: {h['id']}")
+        print(f"Nombre: {h['nombre']}")
+        print(f"Estado: {h['estado']}")
+        print("-" * 50)
+
+def registrar_baja():
+    """Registra la baja de una herramienta."""
+    herramientas = cargar_herramientas()
+    bajas = cargar_bajas(ARCHIVO_BAJAS)
+
+    listar_herramientas()
+    try:
+        id_herramienta = int(input("Seleccione el ID de la herramienta: "))
+        herramienta = next((h for h in herramientas if h['id'] == id_herramienta), None)
+
+        if herramienta:
+            fecha_de_baja = datetime.now().strftime("%Y-%m-%d")
+            motivo = input("¿Cuál fue el motivo de la baja?: ")
+
+            baja = {
+                "id": herramienta['id'],
+                "nombre": herramienta['nombre'],
+                "fecha_baja": fecha_de_baja,
+                "motivo": motivo
+            }
+            bajas.append(baja)
+            guardar_bajas(ARCHIVO_BAJAS, bajas)
+            print("Baja registrada exitosamente.")
+        else:
+            print("ID de herramienta no encontrado.")
+    except ValueError:
+        print("Por favor, ingrese un ID válido.")
+
+if __name__ == "__main__":
+    while True:
+        print("\nMenú:")
+        print("1. Listar herramientas")
+        print("2. Registrar baja")
+        print("3. Salir")
+        opcion = input("Seleccione una opción: ")
+
+        if opcion == "1":
+            listar_herramientas()
+        elif opcion == "2":
+            registrar_baja()
+        elif opcion == "3":
+            print("Saliendo del programa.")
+            break
+        else:
+            print("Opción no válida. Intente de nuevo.")
